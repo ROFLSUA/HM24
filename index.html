@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Інтернет-магазин</title>
+    <style>
+        .container {
+            display: flex;
+        }
+
+        .categories {
+            width: 20%;
+        }
+
+        .products {
+            width: 40%;
+        }
+
+        .product-info {
+            width: 40%;
+        }
+
+        #order-form {
+            display: none;
+        }
+
+        .orders-list {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="categories">
+            <h2>Категорії</h2>
+            <ul id="category-list">
+                <li onclick="showProducts('Електроніка')">Електроніка</li>
+            </ul>
+        </div>
+
+        <div class="products">
+            <h2>Товари</h2>
+            <ul id="product-list">
+            </ul>
+        </div>
+
+        <div class="product-info">
+            <h2>Інформація про товар</h2>
+            <div id="product-details">
+            </div>
+            <button id="buy-button" onclick="showOrderForm()">Купити</button>
+            <div id="order-form">
+                <h3>Форма оформлення замовлення</h3>
+                <form onsubmit="submitOrder(event)">
+                    <label for="pib">ПІБ покупця:</label>
+                    <input type="text" id="pib" required><br>
+                    <label for="city">Місто:</label>
+                    <select id="city" required>
+                        <option value="Київ">Київ</option>
+                        <option value="Харків">Харків</option>
+                        <option value="Одеса">Одеса</option>
+                    </select><br>
+                    <label for="nova-poshta">Склад Нової пошти:</label>
+                    <input type="text" id="nova-poshta" required><br>
+                    <label for="payment">Спосіб оплати:</label>
+                    <input type="radio" id="payment-cash" name="payment" value="Післяплата" required>
+                    <label for="payment-cash">Післяплата</label>
+                    <input type="radio" id="payment-card" name="payment" value="Оплата банківською карткою" required>
+                    <label for="payment-card">Оплата банківською карткою</label><br>
+                    <label for="quantity">Кількість товару:</label>
+                    <input type="number" id="quantity" required><br>
+                    <label for="comment">Коментар до замовлення:</label>
+                    <textarea id="comment"></textarea><br>
+                    <button type="submit">Підтвердити замовлення</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <button id="my-orders-button" onclick="showOrdersList()">Мої замовлення</button>
+    <div class="orders-list" id="orders-list">
+    </div>
+    <script>
+        let orders = [];
+
+        function showProducts(category) {
+            document.getElementById('product-list').innerHTML = '';
+
+            const productsForCategory = [
+                { name: 'Сматрфон', price: 8000, description: 'дуже багато корисних функцій' },
+                { name: 'Ноут', price: 50000, description: 'RX 6800M 12gb , Ryzen 9 5900HX 8, 300HZ' },
+                { name: 'Планшет', price: 10000, description: 'дуже гарний та комфортний' }
+            ];
+
+            productsForCategory.forEach(product => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${product.name} - ${product.price} грн`;
+                listItem.onclick = () => showProductDetails(product);
+                document.getElementById('product-list').appendChild(listItem);
+            });
+        }
+
+        function showProductDetails(product) {
+            document.getElementById('product-details').innerHTML = `
+                <h3>${product.name}</h3>
+                <p>${product.description}</p>
+                <p>Ціна: ${product.price} грн</p>
+            `;
+        }
+
+        function showOrderForm() {
+            document.getElementById('order-form').style.display = 'block';
+        }
+
+        function submitOrder(event) {
+            event.preventDefault();
+
+            const pib = document.getElementById('pib').value;
+            const city = document.getElementById('city').value;
+            const novaPoshta = document.getElementById('nova-poshta').value;
+            const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+            const quantity = document.getElementById('quantity').value;
+            const comment = document.getElementById('comment').value;
+
+            if (!pib || !city || !novaPoshta || !paymentMethod || !quantity) {
+                alert('Будь ласка, заповніть всі поля');
+                return;
+            }
+
+            const order = {
+                pib,
+                city,
+                novaPoshta,
+                paymentMethod,
+                quantity,
+                comment
+            };
+            orders.push(order);
+            localStorage.setItem('orders', JSON.stringify(orders));
+            alert('Замовлення успішно оформлено');
+            event.target.reset();
+            document.getElementById('order-form').style.display = 'none';
+        }
+        function showOrdersList() {
+            const ordersList = document.getElementById('orders-list');
+            ordersList.style.display = 'block';
+            ordersList.innerHTML = '';
+            const storedOrders = JSON.parse(localStorage.getItem('orders')) || [];
+
+            storedOrders.forEach((order, index) => {
+                const orderItem = document.createElement('div');
+                orderItem.innerHTML = `
+                    <p>Замовлення #${index + 1} (${order.city}) - ${order.quantity} од. - ${order.paymentMethod}</p>
+                    <button onclick="showOrderDetails(${index})">Деталі</button>
+                    <button onclick="deleteOrder(${index})">Видалити</button>
+                `;
+                ordersList.appendChild(orderItem);
+            });
+        }
+
+        function showOrderDetails(index) {
+            const order = orders[index];
+            alert(`Деталі замовлення #${index + 1}:\nПІБ: ${order.pib}\nМісто: ${order.city}\nСклад Нової пошти: ${order.novaPoshta}\nСпосіб оплати: ${order.paymentMethod}\nКількість: ${order.quantity}\nКоментар: ${order.comment}`);
+        }
+
+        function deleteOrder(index) {
+            if (confirm(`Ви впевнені, що хочете видалити замовлення #${index + 1}?`)) {
+                orders.splice(index, 1);
+                localStorage.setItem('orders', JSON.stringify(orders));
+                showOrdersList();
+            }
+        }
+    </script>
+</body>
+</html>
