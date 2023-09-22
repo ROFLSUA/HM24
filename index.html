@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Погода в місті</title>
+</head>
+<body>
+    <h1>Погода</h1>
+    <p>Місто: <span id="city"></span></p>
+    <p>Температура: <span id="temperature"></span> °C</p>
+    <p>Тиск: <span id="pressure"></span> hPa</p>
+    <p>Опис: <span id="description"></span></p>
+    <p>Вологість: <span id="humidity"></span>%</p>
+    <p>Швидкість вітру: <span id="wind-speed"></span> м/с</p>
+    <p>Напрям вітру: <span id="wind-deg"></span>°</p>
+    <img id="weather-icon" src="" alt="Погодний значок">
+    
+    <script>
+function fetchWeather() {
+    const apiUrl = "http://api.openweathermap.org/data/2.5/weather?q=LVIV&units=metric&APPID=5d066958a60d315387d9492393935c19";
+
+    fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById("city").textContent = data.name;
+            document.getElementById("temperature").textContent = data.main.temp;
+            document.getElementById("pressure").textContent = data.main.pressure;
+            document.getElementById("description").textContent = data.weather[0].description;
+            document.getElementById("humidity").textContent = data.main.humidity;
+            document.getElementById("wind-speed").textContent = data.wind.speed;
+            document.getElementById("wind-deg").textContent = data.wind.deg;
+
+            const iconCode = data.weather[0].icon;
+            const iconUrl = `http://openweathermap.org/img/w/${iconCode}.png`;
+            document.getElementById("weather-icon").src = iconUrl;
+        })
+        .catch(error => {
+            console.error("Помилка при отриманні погодних даних:", error);
+        });
+}
+
+fetchWeather();
+
+    </script>
+</body>
+</html>
